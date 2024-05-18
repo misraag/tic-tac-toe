@@ -5,7 +5,12 @@ import Log from "./components/Log";
 import { WINNING_COMBINATIONS } from "./components/winning-combinations";
 import GameOver from "./components/GameOver";
 
-const initialGameBoard = [
+const PLAYERS = {
+  X: "Player 1",
+  O: "Player 2",
+};
+
+const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
   [null, null, null],
@@ -20,19 +25,9 @@ function derivedActivePlayer(gameTurn) {
   return player;
 }
 
-function App() {
-  // const [activePlayer, setActivePlayer] = useState("X");
-  const [gameTurn, setGameTurn] = useState([]);
-  const [players, setPlayers] = useState({
-    'X': 'Player1',
-    'O': 'Player2'
-  })
-  const activePlayer = derivedActivePlayer(gameTurn);
-
-  let winner;
-
+function deriveGameBoard(gameTurn) {
   //this is important to make gameBoard immutable as when we do rematch if we directly refer this initial array, the initial array will not be reset and game will not restart
-  const gameBoard = [...initialGameBoard.map((array) => [...array])];
+  const gameBoard = [...INITIAL_GAME_BOARD.map((array) => [...array])];
 
   for (const turn of gameTurn) {
     const { box, player } = turn;
@@ -40,6 +35,11 @@ function App() {
     gameBoard[row][col] = player;
   }
 
+  return gameBoard;
+}
+
+function deriveWinner(gameBoard, players) {
+  let winner;
   for (const combinations of WINNING_COMBINATIONS) {
     const firstBox = gameBoard[combinations[0].row][combinations[0].column];
     const secondBox = gameBoard[combinations[1].row][combinations[1].column];
@@ -50,6 +50,18 @@ function App() {
     }
   }
 
+  return winner;
+}
+
+function App() {
+  const [gameTurn, setGameTurn] = useState([]);
+  const [players, setPlayers] = useState(PLAYERS);
+
+  const activePlayer = derivedActivePlayer(gameTurn);
+  const gameBoard = deriveGameBoard(gameTurn);
+
+  const winner = deriveWinner(gameBoard, players);
+
   const hasDraw = gameTurn.length === 9 && !winner;
 
   function handleRematch() {
@@ -57,10 +69,6 @@ function App() {
   }
 
   function clickSquare(rowIndex, colIndex) {
-    // setActivePlayer((currActivePlayer) =>
-    //   currActivePlayer === "X" ? "O" : "X"
-    // );
-
     setGameTurn((prevGameTurn) => {
       let currentPlayer = derivedActivePlayer(prevGameTurn);
 
@@ -73,21 +81,31 @@ function App() {
     });
   }
 
-  function handlePlayerNameChange (symbol, newName) {
+  function handlePlayerNameChange(symbol, newName) {
     setPlayers((prevPlayers) => {
       return {
         ...prevPlayers,
-        [symbol]: newName
-      }
-    })
+        [symbol]: newName,
+      };
+    });
   }
 
   return (
     <main>
       <div id="game-container">
         <ol id="players" className="highlight-player">
-          <Players name="Player 1" symbol="X" isActive={activePlayer === "X"} onNameChange={handlePlayerNameChange} />
-          <Players name="Player 2" symbol="O" isActive={activePlayer === "O"} onNameChange={handlePlayerNameChange} />
+          <Players
+            name={PLAYERS.X}
+            symbol="X"
+            isActive={activePlayer === "X"}
+            onNameChange={handlePlayerNameChange}
+          />
+          <Players
+            name={PLAYERS.O}
+            symbol="O"
+            isActive={activePlayer === "O"}
+            onNameChange={handlePlayerNameChange}
+          />
         </ol>
         {(winner || hasDraw) && (
           <GameOver winner={winner} onRematch={handleRematch} />
