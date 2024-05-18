@@ -1,25 +1,40 @@
 import { useState } from "react";
 
 const initialGameBoard = [
-  [null, "X", "O"],
+  [null, null, null],
   [null, null, null],
   [null, null, null],
 ];
 
-export default function GameBoard( { onSelectSquare, activePlayerSymbol }) {
-    const [gameBoard, setGameBoard] = useState(initialGameBoard)
+export default function GameBoard({ onSelectSquare, turns }) {
+  const gameBoard = initialGameBoard;
 
-    function clickHandler(rowIndex, colIndex, event) {
-       
-        setGameBoard((prevStateBoard) => {
-            const updatedStateBoard = [...prevStateBoard.map(innerArray => [...innerArray])];
-            updatedStateBoard[rowIndex][colIndex] = activePlayerSymbol
+  for (const turn of turns) {
+    const { box, player } = turn;
+    const { row, col } = box;
+    gameBoard[row][col] = player;
+  }
 
-            return updatedStateBoard;
-        })
+  //   const [gameBoard, setGameBoard] = useState(initialGameBoard);
 
-        onSelectSquare();
-    }
+  //   function clickHandler(rowIndex, colIndex) {
+  //     {
+  //       !gameBoard[rowIndex][colIndex] &&
+  //         setGameBoard((prevStateBoard) => {
+  //           const updatedStateBoard = [
+  //             ...prevStateBoard.map((innerArray) => [...innerArray]),
+  //           ];
+  //           updatedStateBoard[rowIndex][colIndex] = activePlayerSymbol
+
+  //           return updatedStateBoard;
+  //         });
+
+  //       onSelectSquare();
+  //     }
+  //     {
+  //         gameBoard[rowIndex][colIndex] && window.alert("Choose a different box")
+  //     }
+  //   }
 
   return (
     <ol id="game-board">
@@ -28,7 +43,9 @@ export default function GameBoard( { onSelectSquare, activePlayerSymbol }) {
           <ol>
             {row.map((playerSymbol, colIndex) => (
               <li key={colIndex}>
-                <button onClick={() => clickHandler(rowIndex, colIndex)}>{playerSymbol}</button>
+                <button onClick={() => onSelectSquare(rowIndex, colIndex)}>
+                  {playerSymbol}
+                </button>
               </li>
             ))}
           </ol>
